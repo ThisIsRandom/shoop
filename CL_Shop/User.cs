@@ -2,18 +2,24 @@
 
 namespace CL_Shop
 {
-    public class User
+    public class User: BaseItem
     {
-        public int UserId;
         public string Username;
         public ContactInformation ContactInformation;
 
-        public User(int Id, string Name, String Address, string City, int Postal)
+        public User(string Name /*, String Address, string City, int Postal*/)
         {
-            this.UserId = Id;
+            
             this.Username = Name;
-            this.ContactInformation = new ContactInformation(Address, City, Postal);
+            //this.ContactInformation = new ContactInformation(Address, City, Postal);
+
         }
+
+        public override string GetStringRepl()
+        {
+            return $"USER ID: {this.Id} --- USERNAME: {this.Username}";
+        }
+        
 
     }
 }

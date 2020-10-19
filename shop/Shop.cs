@@ -1,21 +1,20 @@
 ﻿using CL_Shop;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
 
 
 namespace shop
 {
     class Shop
     {
-        public Repo Repo;
+        public OrderRepo Orders = new OrderRepo();
+        public UserRepo Users = new UserRepo();
+        public ProductRepo Products = new ProductRepo();
+
         private bool _IsRunning;
 
         public Shop()
         {
-
-            this.Repo = new Repo();
 
             this._IsRunning = true;
 
@@ -39,13 +38,13 @@ namespace shop
                         this.CreateOrder();
                         break;
                     case 4:
-                        this.PrintOrders();
+                        this.Print(this.Orders.GetList());
                         break;
                     case 5:
-                        this.PrintUsers();
+                        this.Print(this.Users.GetList());
                         break;
                     case 6:
-                        this.PrintProducts();
+                        this.Print(this.Products.GetList());
                         break;
                     case 7:
                         this.PrintSale();
@@ -78,28 +77,15 @@ namespace shop
             return Convert.ToInt32(Console.ReadLine());
         }
 
-
-        public void PrintUsers()
+        public void Print<T>(List<T> Items) where T: BaseItem
         {
-            this.Repo.GetList<User>()
-                   .ForEach((User user) => Console.WriteLine(user.Username));
+            Items.ForEach(item => Console.WriteLine(item.GetStringRepl()));
         }
-
-        public void PrintProducts()
-        {
-            this.Repo.GetList<Product>()
-                .ForEach((Product product) => Console.WriteLine(product.Description));
-        }
-
-        public void PrintOrders()
-        {
-            this.Repo.GetList<Order>()
-                .ForEach((Order order) => Console.WriteLine(order.OrderId));
-        }
+    
 
         public void PrintSale()
         {
-            Console.WriteLine(this.Repo.GetDailyIncome());
+            Console.WriteLine($"INCOME: {this.Orders.GetIncome()}");
         }
 
         public void Delete()
@@ -121,13 +107,13 @@ namespace shop
                 switch(Type)
                 {
                     case "product":
-                        this.PrintProducts();
+                        this.Print(this.Products.GetList());
                         break;
                     case "order":
-                        this.PrintOrders();
+                        this.Print(this.Orders.GetList());
                         break;
                     case "user":
-                        this.PrintUsers();
+                        this.Print(this.Users.GetList());
                         break;
                 }
 
@@ -137,13 +123,13 @@ namespace shop
                 switch (Type)
                 {
                     case "product":
-                        this.Repo.DeleteItem(this.Repo.GetItemById<Product>(Id));
+                        this.Products.DeleteItem(this.Products.GetItemById(Id));
                         break;
                     case "order":
-                        this.Repo.DeleteItem(this.Repo.GetItemById<Order>(Id));
+                        this.Orders.DeleteItem(this.Orders.GetItemById(Id));
                         break;
                     case "user":
-                        this.Repo.DeleteItem(this.Repo.GetItemById<User>(Id));
+                        this.Users.DeleteItem(this.Users.GetItemById(Id));
                         break;
                 }
             }
@@ -159,8 +145,6 @@ namespace shop
             {
                 Console.WriteLine("Brugernavn:");
                 string Name = Console.ReadLine();
-                Console.WriteLine("Bruger id:");
-                int Id = Convert.ToInt32(Console.ReadLine());
                 Console.WriteLine("City:");
                 string City = Console.ReadLine();
                 Console.WriteLine("Postal:");
@@ -169,11 +153,10 @@ namespace shop
 
                 string Address = Postal + " " + City;
 
-                User User = new User(Id, Name, Address, City, Postal);
+                User User = new User(Name);
 
-                this.Repo.AddItem<User>(User);
-
-       
+                this.Users.AddItem(User);
+                
             }
             catch
             {
@@ -185,9 +168,9 @@ namespace shop
         {
             try
             {
-                Console.WriteLine("Product id:");
+                Console.WriteLine("PRODUCT NAME:");
 
-                int Id = Convert.ToInt32(Console.ReadLine());
+                string Name = Console.ReadLine();
 
                 Console.WriteLine("Description:");
 
@@ -197,17 +180,14 @@ namespace shop
 
                 int Price = Convert.ToInt32(Console.ReadLine());
 
-                Product Product = new Product(Id, Description, Price);
+                Product Product = new Product(Name, Description, Price);
 
-                this.Repo.AddItem<Product>(Product);
+                this.Products.AddItem(Product);
             }
             catch
             {
                 this.CreateProduct();
             }
-
-            
-
         }
 
         public void CreateOrder()
@@ -215,23 +195,36 @@ namespace shop
             
             try
             {
+
+                bool _SelectingProducts = true;
+
+                this.Print(this.Users.GetList());
+
                 Console.WriteLine("User Id:");
+
                 int UserId = Convert.ToInt32(Console.ReadLine());
-                Console.WriteLine("Product Id:");
-                int ProductId = Convert.ToInt32(Console.ReadLine());
-                Console.WriteLine("Order Id:");
-                int OrderId = Convert.ToInt32(Console.ReadLine());
 
-                User User = this.Repo.GetItemById<User>(UserId) as User;
+                User User = this.Users.GetItemById(UserId);
 
-                Product Product = this.Repo.GetItemById<Product>(ProductId) as Product;
+                List<Product> Products = new List<Product>();
 
-                if(Product != null && User != null)
+                while(_SelectingProducts)
                 {
-                    Order Order = new Order(User, Product, OrderId);
+                    this.Print(this.Products.GetList());
 
-                    this.Repo.AddItem(Order);
+                    Console.WriteLine("Product Id:");
 
+                    Products.Add(this.Products.GetItemById(Convert.ToInt32(Console.ReadLine())));
+
+                    Console.WriteLine("Vil du tilføje flere produkter? Y = Yes --- N = No");
+
+                    if (Console.ReadLine().ToLower() == "n") _SelectingProducts = false;
+
+                }
+
+                if(Products.Count > 0)
+                {
+                    this.Orders.AddItem(new Order(User, Products));
                     return;
                 }
 
