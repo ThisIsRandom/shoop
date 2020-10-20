@@ -7,27 +7,37 @@ namespace CL_Shop
 {
     public class Order: BaseItem
     {
-        public User User;
-        public List<Product> Products = new List<Product>();
-        public DateTime CreatedAt;
+        private User _User;
+        private List<Product> _Products = new List<Product>();
+        public DateTime CreatedAt { get; private set; }
        
         public Order(User User, List<Product> ProductsToBeAdded)
         {
-            this.User = User;
-            this.Products = ProductsToBeAdded;
+            this._User = User;
+            this._Products = ProductsToBeAdded;
             this.CreatedAt = DateTime.Now;
         }
 
         public override string GetStringRepl()
         {
-            return $"ORDER ID: {this.Id} --- ORDERED BY: {this.User.Username} --- PRODUCT COUNT: {this.Products.Count} --- ORDER CREATED: {this.CreatedAt}";
+            return $"ORDER ID: {this.Id} --- ORDERED BY: {this._User.Username} --- PRODUCT COUNT: {this._Products.Count} --- ORDER CREATED: {this.CreatedAt}";
         }
 
         public double GetOrderPrice()
         {
-            return this.Products
+            return this._Products
                     .Select(item => item.Price)
                     .Sum();
+        }
+
+        public void AddProduct(Product product)
+        {
+            this._Products.Add(product);
+        }
+
+        public List<Product> GetProducts()
+        {
+            return this._Products.Select(x => x).ToList();
         }
     }
 }

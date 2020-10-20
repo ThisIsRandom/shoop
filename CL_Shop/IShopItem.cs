@@ -6,7 +6,9 @@ namespace CL_Shop
 {
     interface IShopItem
     {
-        public int Id { get; set; }
+        int Id { get; set; }
+
+        string GetStringRepl();
 
     }
 }

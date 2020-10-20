@@ -85,7 +85,7 @@ namespace shop
 
         public void PrintSale()
         {
-            Console.WriteLine($"INCOME: {this.Orders.GetIncome()}");
+            Console.WriteLine($"INCOME: {this.Orders.GetIncome(30)}");
         }
 
         public void Delete()

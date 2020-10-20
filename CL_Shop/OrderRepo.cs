@@ -12,10 +12,13 @@ namespace CL_Shop
 
         }
 
-        public double GetIncome()
+        public double GetIncome(int days)
         {
-            return items.Select(item => item.GetOrderPrice())
-                .Sum();
+            DateTime date = DateTime.Now.AddDays(-days);
+
+            return this.items.FindAll(x => x.CreatedAt > date)
+                    .Select(x => x.GetOrderPrice())
+                    .Sum();
         }
     }
 }

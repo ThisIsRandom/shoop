@@ -6,12 +6,12 @@ namespace CL_Shop
 {
     public abstract class BaseItem: IShopItem
     {
-        public static int PlaceHolderId = 0;
+        private static int _PlaceHolderId = 1;
         public int Id { get; set; }
 
         public BaseItem()
         {
-            this.Id = BaseItem.PlaceHolderId++;
+            this.Id = BaseItem._PlaceHolderId++;
         }
 
         public abstract string GetStringRepl();
