@@ -1,4 +1,13 @@
 ﻿using CL_Shop;
+using CL_Shop.shop_factory;
+using CL_Shop.shop_items;
+using CL_Shop.shop_items.order;
+using CL_Shop.shop_items.product;
+using CL_Shop.shop_items.user;
+using CL_Shop.ShopItems;
+using CL_Shop.ShopItems.order;
+using CL_Shop.ShopItems.product;
+using CL_Shop.ShopItems.user;
 using System;
 using System.Collections.Generic;
 
@@ -7,16 +16,22 @@ namespace shop
 {
     class Shop
     {
-        public OrderRepo Orders = new OrderRepo();
-        public UserRepo Users = new UserRepo();
-        public ProductRepo Products = new ProductRepo();
+        public OrderRepo Orders = RepoFactory.createOrderRepo();
+        public UserRepo Users = RepoFactory.createUserRepo();
+        public ProductRepo Products = RepoFactory.createProductRepo();
+        public IItemFactory factory;
 
         private bool _IsRunning;
 
-        public Shop()
+        public Shop(IItemFactory factory)
         {
+            this.factory = factory;
 
             this._IsRunning = true;
+
+            Generator.createIndexForType("product", 0);
+            Generator.createIndexForType("order", 0);
+            Generator.createIndexForType("user", 0);
 
             while(this._IsRunning)
             {
@@ -77,9 +92,9 @@ namespace shop
             return Convert.ToInt32(Console.ReadLine());
         }
 
-        public void Print<T>(List<T> Items) where T: BaseItem
+        public void Print<T>(List<T> Items) where T: IShopItem
         {
-            Items.ForEach(item => Console.WriteLine(item.GetStringRepl()));
+            Items.ForEach(item => Console.WriteLine(item.getStringRepl()));
         }
     
 
@@ -107,13 +122,13 @@ namespace shop
                 switch(Type)
                 {
                     case "product":
-                        this.Print(this.Products.GetList());
+                        this.Print<IProduct>(this.Products.GetList());
                         break;
                     case "order":
-                        this.Print(this.Orders.GetList());
+                        this.Print<IOrder>(this.Orders.GetList());
                         break;
                     case "user":
-                        this.Print(this.Users.GetList());
+                        this.Print<IUser>(this.Users.GetList());
                         break;
                 }
 
@@ -150,12 +165,15 @@ namespace shop
                 Console.WriteLine("Postal:");
                 int Postal = Convert.ToInt32(Console.ReadLine());
 
+                IUserProps props = new UserProps();
+
+                props.username = Name;
+                props.id = Generator.getId("user");
+                
 
                 string Address = Postal + " " + City;
 
-                User User = new User(Name);
-
-                this.Users.AddItem(User);
+                this.Users.AddItem(this.factory.create(props));
                 
             }
             catch
@@ -180,9 +198,14 @@ namespace shop
 
                 int Price = Convert.ToInt32(Console.ReadLine());
 
-                Product Product = new Product(Name, Description, Price);
+                IProductProps props = new ProductProps();
 
-                this.Products.AddItem(Product);
+                props.name = Name;
+                props.price = Price;
+                props.description = Description;
+                props.id = Generator.getId("product");
+
+                this.Products.AddItem(this.factory.create(props));
             }
             catch
             {
@@ -204,9 +227,9 @@ namespace shop
 
                 int UserId = Convert.ToInt32(Console.ReadLine());
 
-                User User = this.Users.GetItemById(UserId);
+                IUser User = this.Users.GetItemById(UserId);
 
-                List<Product> Products = new List<Product>();
+                List<IProduct> Products = new List<IProduct>();
 
                 while(_SelectingProducts)
                 {
@@ -222,9 +245,14 @@ namespace shop
 
                 }
 
+                IOrderProps props = new OrderProps();
+                props.user = User;
+                props.products = Products;
+                props.id = Generator.getId("order");
+
                 if(Products.Count > 0)
                 {
-                    this.Orders.AddItem(new Order(User, Products));
+                    this.Orders.AddItem(this.factory.create(props));
                     return;
                 }
 

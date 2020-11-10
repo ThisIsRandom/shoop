@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CL_Shop.shop_factory;
+using System;
 
 namespace shop
 {
@@ -6,7 +7,9 @@ namespace shop
     {
         static void Main(string[] args)
         {
-            new Shop();
+            new Shop(
+                new ShopItemFactory()
+                );
         }
     }
 }
