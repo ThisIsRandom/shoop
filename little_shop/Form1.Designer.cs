@@ -59,9 +59,9 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.button2 = new System.Windows.Forms.Button();
             this.inputDollarDays = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
-            this.button2 = new System.Windows.Forms.Button();
             this.grpCreateUser.SuspendLayout();
             this.grpCreateProduct.SuspendLayout();
             this.grpDeleteItem.SuspendLayout();
@@ -187,6 +187,7 @@
             this.inputProductName.Name = "inputProductName";
             this.inputProductName.Size = new System.Drawing.Size(200, 39);
             this.inputProductName.TabIndex = 0;
+            this.inputProductName.TextChanged += new System.EventHandler(this.inputProductName_TextChanged);
             // 
             // grpDeleteItem
             // 
@@ -301,6 +302,7 @@
             this.output.Name = "output";
             this.output.Size = new System.Drawing.Size(710, 394);
             this.output.TabIndex = 5;
+            this.output.SelectedIndexChanged += new System.EventHandler(this.output_SelectedIndexChanged);
             // 
             // groupBox1
             // 
@@ -380,6 +382,16 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "$$$$";
             // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(40, 130);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(86, 46);
+            this.button2.TabIndex = 2;
+            this.button2.Text = "Print";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
             // inputDollarDays
             // 
             this.inputDollarDays.Location = new System.Drawing.Point(40, 74);
@@ -395,16 +407,6 @@
             this.label10.Size = new System.Drawing.Size(59, 30);
             this.label10.TabIndex = 0;
             this.label10.Text = "Days";
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(40, 130);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(86, 46);
-            this.button2.TabIndex = 2;
-            this.button2.Text = "Print";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // MainScreen
             // 

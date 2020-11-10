@@ -1,39 +1,58 @@
-﻿using System;
+﻿using CL_Shop;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
+using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using CL_Shop;
+using CL_Shop.shop_factory;
+using CL_Shop.ShopItems;
+using CL_Shop.ShopItems.user;
+using CL_Shop.ShopItems.product;
+using System.Windows.Forms.VisualStyles;
+using CL_Shop.ShopItems.order;
+using CL_Shop.shop_items.product;
+using CL_Shop.shop_items.order;
+using CL_Shop.shop_items.user;
 
 namespace little_shop
 {
     public partial class MainScreen : Form
     {
 
-        public OrderRepo Orders = new OrderRepo();
-        public UserRepo Users = new UserRepo();
-        public ProductRepo Products = new ProductRepo();
 
+        public UserRepo Users = RepoFactory.createUserRepo();
+        public ProductRepo Products = RepoFactory.createProductRepo();
+        public OrderRepo Orders = RepoFactory.createOrderRepo();
+        public ShopItemFactory ItemsFactory = new ShopItemFactory();
+
+        //public SqlConnection con = db.GetDbConnection();
         public MainScreen()
         {
             InitializeComponent();
+
+            Generator.createIndexForType("order", 0);
+            Generator.createIndexForType("product", 0);
+            Generator.createIndexForType("user", 0);
         }
 
         private void btnCreateCustomer_Click(object sender, EventArgs e)
         {
             try
             {
-                this.Users.AddItem(new User(inputUsername.Text));
+
+                IUserProps props = new UserProps();
+                props.username = inputUsername.Text;
+                props.id = Generator.getId("user");
+               
+
+                this.Users.AddItem(this.ItemsFactory.create(props));
                 inputUsername.Clear();
-                this.ShowMessage($"{inputUsername.Text} er nu blevet oprettet.");
+                this.ShowMessage($"{props.username} er nu blevet oprettet.");
             }
             catch
             {
-                this.ShowMessage($"{inputUsername.Text} blev ikke oprettet... prøv igen");
+                this.ShowMessage($"blev ikke oprettet... prøv igen");
             }
         }
 
@@ -55,13 +74,17 @@ namespace little_shop
 
             this.Users.GetList().ForEach(item => {          
 
-                output.Items.Add(item.GetStringRepl().ToString());
+                output.Items.Add(item.getStringRepl().ToString());
 
             });
         }
 
         private void btnPrintProduct_Click(object sender, EventArgs e)
         {
+            //SqlCommand command = new SqlCommand("INSERT INTO Product (ProductName, ProductPrice, ProductsDesc) VALUES('test', 10, 'dadadad')", this.con);
+            //SqlDataReader reader = command.ExecuteReader();
+            //reader.Read();
+            //reader.Close();
             output.Items.Clear();
             
             if (!Products.HasItems())
@@ -72,7 +95,7 @@ namespace little_shop
 
             this.Products.GetList().ForEach(item => {
 
-                output.Items.Add(item.GetStringRepl().ToString());
+                output.Items.Add(item.getStringRepl().ToString());
 
             });
         }
@@ -96,7 +119,7 @@ namespace little_shop
 
             this.Orders.GetList().ForEach(item => {
 
-                output.Items.Add(item.GetStringRepl().ToString());
+                output.Items.Add(item.getStringRepl().ToString());
 
             });
         }
@@ -105,11 +128,18 @@ namespace little_shop
         {
             try
             {
-                List<TextBox> x = new List<TextBox> { inputProductName, inputProductDesc, inputProductPrice };
+
+                IProductProps props = new ProductProps();
+
+                props.id = Generator.getId("product");
+                props.description = inputProductDesc.Text;
+                props.price = Convert.ToDouble(inputProductPrice.Text);
+                props.name = inputProductName.Text;
+
                 this.Products
-                    .AddItem(new Product(inputProductName.Text, inputProductDesc.Text, Convert.ToDouble(inputProductPrice.Text)));
-                this.ShowMessage($"{inputProductName.Text} blev oprettet korrekt");
-                x.ForEach(x => x.Clear());
+                    .AddItem(this.ItemsFactory.create(props));
+                this.ShowMessage($"{props.name} blev oprettet korrekt");
+               
             }
             catch
             {
@@ -148,9 +178,12 @@ namespace little_shop
         {
             try
             {
-                User user = this.Users.GetItemById(Convert.ToInt32(inputOrderUserId.Text));
+         
+                IUser user = this.Users.GetItemById(Convert.ToInt32(inputOrderUserId.Text));
 
-                List<Product> ProductIds = inputOrderProductId.Text
+                IOrderProps props = new OrderProps();
+
+                List<IProduct> ProductIds = inputOrderProductId.Text
                     .Split(',', StringSplitOptions.RemoveEmptyEntries)
                     .Select(x => x.Trim())
                     .Select(x => this.Products.GetItemById(Convert.ToInt32(x)))
@@ -162,9 +195,10 @@ namespace little_shop
                     return;
                 }
 
-                
+                props.user = user;
+                props.products = ProductIds;
 
-                this.Orders.AddItem(new Order(user, ProductIds));
+                this.Orders.AddItem(this.ItemsFactory.create(props));
 
                 this.ShowMessage("Ordre er oprettet succesfuldt");
             
@@ -185,6 +219,21 @@ namespace little_shop
             {
                 this.ShowMessage("Noget gik galt.. prøv igen");
             }
+        }
+
+        private void inputProductName_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void inputProductPrice_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void output_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
